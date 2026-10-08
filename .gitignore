@@ -1,0 +1,49 @@
+# Environment & Configuration
+.env
+.env.*
+!.env.example
+
+# Python & Virtual Environments
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+
+# Data & Datasets
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+*.csv
+*.zip
+*.parquet
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# ML Models & Vector Store Artifacts
+*.cbm
+*.pkl
+*.joblib
+*.faiss
+*.index
+
+# Node / Frontend Build Artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+node_modules/
+dist/
+build/
+.next/
+
+# IDE & System Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
