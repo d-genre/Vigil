@@ -1,1 +1,6 @@
-
+data/raw/*
+data/processed/*
+*.csv
+*.zip
+*.db
+*.sqlite
