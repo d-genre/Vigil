@@ -2,3 +2,10 @@ fastapi
 uvicorn
 pydantic
 python-dotenv
+catboost
+pandas
+numpy
+networkx
+faiss-cpu
+sentence-transformers
+langgraph
