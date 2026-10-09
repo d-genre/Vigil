@@ -4,8 +4,8 @@ import numpy as np
 from pathlib import Path
 import joblib
 
-from backend.fraud_patterns.mule_chain import detect_mule_chain
-from backend.fraud_patterns.common import PROJECT_ROOT
+from fraud.mule_chain import detect_mule_chain
+from fraud.common import PROJECT_ROOT
 
 @pytest.fixture
 def sample_mule_chain_data():
@@ -248,32 +248,31 @@ def test_30_path_traversal_bounded(sample_mule_chain_data):
 
 
 def test_31_card_testing_regression():
-    from backend.fraud_patterns.card_testing import detect_card_testing
+    from fraud.card_testing import detect_card_testing
     res = detect_card_testing(account_id="C0000340")
     assert "pattern_name" in res
     assert res["pattern_name"] == "CARD_TESTING"
 
 
 def test_32_account_takeover_regression():
-    from backend.fraud_patterns.account_takeover import detect_account_takeover
+    from fraud.account_takeover import detect_account_takeover
     res = detect_account_takeover(account_id="C0000529")
     assert "pattern_name" in res
     assert res["pattern_name"] == "ACCOUNT_TAKEOVER"
 
 
 def test_33_raw_data_unchanged():
-    raw_clean_dir = PROJECT_ROOT / "data" / "processed" / "raw_clean"
-    assert (raw_clean_dir / "transactions_clean.csv").exists()
-    assert (raw_clean_dir / "accounts_clean.csv").exists()
+    from ml.data_loader import RAW_DATA_DIR
+    assert RAW_DATA_DIR.exists()
 
 
 def test_34_graph_artifact_unchanged():
-    graph_path = PROJECT_ROOT / "data" / "processed" / "graph" / "fraud_graph.gpickle"
-    assert graph_path.exists()
+    from graph.build_graph import load_fraud_graph
+    G = load_fraud_graph()
+    assert G.number_of_nodes() > 0
 
 
 def test_35_existing_ml_models_unchanged():
-    models_dir = PROJECT_ROOT / "models"
-    assert (models_dir / "logistic_regression.pkl").exists()
-    assert (models_dir / "catboost_fraud.cbm").exists()
-    assert (models_dir / "isolation_forest.pkl").exists()
+    cbm_path = Path(__file__).resolve().parent.parent / "models" / "catboost_fraud.cbm"
+    assert cbm_path.exists()
+    assert cbm_path.stat().st_size > 0

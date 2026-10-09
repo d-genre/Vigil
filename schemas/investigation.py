@@ -79,6 +79,26 @@ class InvestigationCase(BaseModel):
     recommended_action: str = Field("HOLD", description="Recommended action: APPROVE, HOLD, ESCALATE, BLOCK")
     status: str = Field("PENDING_REVIEW", description="Status: INVESTIGATING, PENDING_REVIEW, RESOLVED")
 
+    @property
+    def patterns_detected(self) -> List[FraudPatternResult]:
+        return self.matched_patterns
+
+    @property
+    def ml_screening(self) -> Optional[MLPrediction]:
+        return self.ml_risk_score
+
+    @property
+    def graph_result(self) -> Optional[GraphAnalysisResult]:
+        return self.graph_analysis
+
+    @property
+    def similar_attacks(self) -> List[SimilarAttackResult]:
+        return self.similar_cases
+
+    @property
+    def llm_summary(self) -> Optional[str]:
+        return self.ai_explanation
+
 
 # Alias for backward compatibility
 InvestigationState = InvestigationCase

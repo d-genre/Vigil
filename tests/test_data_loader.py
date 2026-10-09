@@ -12,7 +12,7 @@ import pandas as pd
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.ml import data_loader
+from ml import data_loader
 
 
 def test_transactions_clean_row_count():

@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from typing import Tuple, List, Dict
 
-from backend.ml import data_loader
+from ml import data_loader
 
 # Column Definitions
 TARGET_COLUMNS = ['isFraud']

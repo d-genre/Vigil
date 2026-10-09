@@ -13,7 +13,7 @@ from catboost import CatBoostClassifier
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.ml import train_catboost
+from ml import train_catboost
 
 
 @pytest.fixture(scope="module")
@@ -30,8 +30,20 @@ def loaded_model():
 def feature_data():
     """Module-level fixture to load val and test feature datasets."""
     feat_dir = PROJECT_ROOT / "data" / "processed" / "features"
-    val_df = pd.read_csv(feat_dir / "val_features.csv")
-    te_df = pd.read_csv(feat_dir / "test_features.csv")
+    val_path = feat_dir / "val_features.csv"
+    te_path = feat_dir / "test_features.csv"
+    
+    from ml.data_loader import load_val, load_test
+    if val_path.exists():
+        val_df = pd.read_csv(val_path)
+    else:
+        val_df = load_val()
+        
+    if te_path.exists():
+        te_df = pd.read_csv(te_path)
+    else:
+        te_df = load_test()
+        
     feature_cols = train_catboost.get_feature_columns()
     return val_df, te_df, feature_cols
 

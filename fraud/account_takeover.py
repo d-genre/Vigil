@@ -17,6 +17,12 @@ EVENTS_CLEAN_PATH = PROJECT_ROOT / "data" / "processed" / "raw_clean" / "events_
 
 def load_events_clean(data_path: Optional[Path] = None) -> pd.DataFrame:
     path = data_path or EVENTS_CLEAN_PATH
+    if not path.exists():
+        from ml import data_loader
+        df = data_loader.load_events(processed=True)
+        if 'timestamp' in df.columns and 'ts' not in df.columns:
+            df['ts'] = pd.to_datetime(df['timestamp'], errors='coerce')
+        return df
     df = pd.read_csv(path)
     df['ts'] = pd.to_datetime(df['timestamp'], errors='coerce')
     return df

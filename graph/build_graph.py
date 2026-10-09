@@ -20,15 +20,26 @@ DEFAULT_GRAPH_PATH = GRAPH_DIR / "fraud_graph.gpickle"
 
 
 def load_clean_datasets(data_dir: Optional[Path] = None):
-    """Loads cleaned processed CSV files."""
+    """Loads cleaned processed CSV files or falls back to ml.data_loader."""
     dpath = data_dir or RAW_CLEAN_DIR
-    tx_df = pd.read_csv(dpath / "transactions_clean.csv")
-    acc_df = pd.read_csv(dpath / "accounts_clean.csv")
-    dev_df = pd.read_csv(dpath / "devices_clean.csv")
-    ip_df = pd.read_csv(dpath / "ips_clean.csv")
-    ben_df = pd.read_csv(dpath / "beneficiaries_clean.csv")
-    mer_df = pd.read_csv(dpath / "merchants_clean.csv")
-    return tx_df, acc_df, dev_df, ip_df, ben_df, mer_df
+    if (dpath / "transactions_clean.csv").exists():
+        tx_df = pd.read_csv(dpath / "transactions_clean.csv")
+        acc_df = pd.read_csv(dpath / "accounts_clean.csv")
+        dev_df = pd.read_csv(dpath / "devices_clean.csv")
+        ip_df = pd.read_csv(dpath / "ips_clean.csv")
+        ben_df = pd.read_csv(dpath / "beneficiaries_clean.csv")
+        mer_df = pd.read_csv(dpath / "merchants_clean.csv")
+        return tx_df, acc_df, dev_df, ip_df, ben_df, mer_df
+    
+    from ml import data_loader
+    return (
+        data_loader.load_transactions(processed=True),
+        data_loader.load_accounts(processed=True),
+        data_loader.load_devices(processed=True),
+        data_loader.load_ips(processed=True),
+        data_loader.load_beneficiaries(processed=True),
+        data_loader.load_merchants(processed=True)
+    )
 
 
 def build_fraud_graph(data_dir: Optional[Path] = None) -> nx.MultiDiGraph:
@@ -175,11 +186,16 @@ def save_fraud_graph(G: nx.MultiDiGraph, save_path: Optional[Path] = None):
 
 
 def load_fraud_graph(save_path: Optional[Path] = None) -> nx.MultiDiGraph:
-    """Loads saved NetworkX graph artifact."""
+    """Loads saved NetworkX graph artifact or builds it if missing."""
     spath = save_path or DEFAULT_GRAPH_PATH
-    if not spath.exists():
-        raise FileNotFoundError(f"Graph artifact not found at {spath}")
-    G = joblib.load(spath)
+    if spath and spath.exists():
+        return joblib.load(spath)
+    G = build_fraud_graph()
+    if spath:
+        try:
+            save_fraud_graph(G, spath)
+        except Exception:
+            pass
     return G
 
 

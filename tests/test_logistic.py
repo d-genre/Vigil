@@ -13,7 +13,7 @@ import pandas as pd
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.ml import train_logistic
+from ml import train_logistic
 
 
 @pytest.fixture(scope="module")
