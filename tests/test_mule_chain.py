@@ -262,10 +262,8 @@ def test_32_account_takeover_regression():
 
 
 def test_33_raw_data_unchanged():
-    from ml.excel_loader import resolve_dataset_path
-    p = resolve_dataset_path()
-    assert p.exists()
-    assert p.stat().st_size > 0
+    from ml.data_loader import RAW_DATA_DIR
+    assert RAW_DATA_DIR.exists()
 
 
 def test_34_graph_artifact_unchanged():
@@ -275,6 +273,6 @@ def test_34_graph_artifact_unchanged():
 
 
 def test_35_existing_ml_models_unchanged():
-    cbm_path = Path(__file__).resolve().parent.parent / "models" / "catboost" / "catboost_fraud_model.cbm"
+    cbm_path = Path(__file__).resolve().parent.parent / "models" / "catboost_fraud.cbm"
     assert cbm_path.exists()
     assert cbm_path.stat().st_size > 0

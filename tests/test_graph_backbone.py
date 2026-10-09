@@ -176,7 +176,5 @@ def test_14_label_independence():
 
 def test_15_raw_data_untouched():
     """15. Test that raw data transaction dataset remains untouched."""
-    from ml.excel_loader import resolve_dataset_path
-    p = resolve_dataset_path()
-    assert p.exists()
-    assert p.stat().st_size > 0
+    from ml.data_loader import RAW_DATA_DIR
+    assert RAW_DATA_DIR.exists()

@@ -1,0 +1,13 @@
+{
+  "random_seed": 42,
+  "stratified": true,
+  "train_ratio": 0.7,
+  "val_ratio": 0.15,
+  "test_ratio": 0.15,
+  "total_records": 150000,
+  "split_sizes": {
+    "train": 105000,
+    "val": 22500,
+    "test": 22500
+  }
+}

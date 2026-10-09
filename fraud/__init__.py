@@ -11,7 +11,6 @@ from .mule_chain import detect_mule_chain
 from .rapid_drain import detect_rapid_drain
 from .velocity_burst import detect_velocity_burst
 from .aggregator import run_all_detectors
-from .investigation_engine import InvestigationEngine
 
 __all__ = [
     "detect_card_testing",
@@ -22,5 +21,4 @@ __all__ = [
     "detect_rapid_drain",
     "detect_velocity_burst",
     "run_all_detectors",
-    "InvestigationEngine",
 ]

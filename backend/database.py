@@ -41,5 +41,9 @@ def init_db():
     conn.commit()
     conn.close()
 
+# Auto-initialize database on import if not existing
+init_db()
+
 if __name__ == "__main__":
     init_db()
+

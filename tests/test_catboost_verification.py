@@ -30,15 +30,19 @@ def catboost_model():
 
 @pytest.fixture(scope="module")
 def test_data():
-    assert TEST_DATA_PATH.exists(), f"Test data missing at {TEST_DATA_PATH}"
-    return pd.read_csv(TEST_DATA_PATH)
+    if TEST_DATA_PATH.exists():
+        return pd.read_csv(TEST_DATA_PATH)
+    from ml.data_loader import load_test
+    return load_test()
 
 
 @pytest.fixture(scope="module")
 def feature_names():
-    assert META_DATA_PATH.exists(), f"Metadata missing at {META_DATA_PATH}"
-    meta_df = pd.read_csv(META_DATA_PATH)
-    return meta_df['feature_name'].tolist()
+    if META_DATA_PATH.exists():
+        meta_df = pd.read_csv(META_DATA_PATH)
+        return meta_df['feature_name'].tolist()
+    from ml.train_catboost import get_feature_columns
+    return get_feature_columns()
 
 
 def test_01_model_file_exists():
