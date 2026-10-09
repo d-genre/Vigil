@@ -40,9 +40,10 @@ This document specifies the REST API endpoints and WebSocket channels for the Vi
     "transactions": [
       {
         "transaction_id": "TX8421",
-        "timestamp": "2026-10-08T20:40:00",
+        "timestamp": "2026-10-08T20:40:00Z",
         "account_id": "C102",
         "amount": 28900.0,
+        "currency": "USD",
         "risk_level": "HIGH",
         "fraud_probability": 0.91
       }
@@ -74,7 +75,97 @@ This document specifies the REST API endpoints and WebSocket channels for the Vi
 
 ### `GET /investigations/{case_id}`
 * **Purpose**: Retrieve full investigation details, collected evidence, counter-evidence, graph topology, and LLM explanation.
-* **Response** (200 OK / 404 Not Found): Full `InvestigationState` object.
+* **Response** (200 OK / 404 Not Found):
+  ```json
+  {
+    "case_id": "CASE_8421",
+    "transaction": {
+      "transaction_id": "TX8421",
+      "account_id": "C102",
+      "amount": 28900.0,
+      "currency": "USD",
+      "device_id": "D901",
+      "ip": "185.220.101.4",
+      "beneficiary_id": "B221",
+      "timestamp": "2026-10-08T20:40:00Z",
+      "location": "London",
+      "transaction_type": "TRANSFER"
+    },
+    "ml_risk_score": {
+      "transaction_id": "TX8421",
+      "fraud_probability": 0.91,
+      "risk_level": "HIGH",
+      "model_version": "catboost_v1.0"
+    },
+    "matched_patterns": [
+      {
+        "pattern_name": "IMPOSSIBLE_TRAVEL",
+        "detected": true,
+        "confidence": 0.96,
+        "matched_rules": ["RULE_GEOLOCATION_JUMP"],
+        "details": {
+          "prev_location": "Chennai",
+          "current_location": "London",
+          "calculated_speed_kmh": 24000.0
+        }
+      },
+      {
+        "pattern_name": "DEVICE_SYNDICATE",
+        "detected": true,
+        "confidence": 0.91,
+        "matched_rules": ["RULE_SHARED_DEVICE_MULTI_ACCOUNT"],
+        "details": {
+          "shared_device_id": "D901",
+          "connected_account_count": 5
+        }
+      },
+      {
+        "pattern_name": "VELOCITY_BURST",
+        "detected": true,
+        "confidence": 0.85,
+        "matched_rules": ["RULE_RAPID_FIRE_BURST"],
+        "details": {
+          "transaction_count_window": 8,
+          "window_duration_seconds": 45
+        }
+      }
+    ],
+    "graph_analysis": {
+      "account_id": "C102",
+      "is_ring_member": true,
+      "ring_id": "RING_402",
+      "hub_score": 0.76,
+      "graph_paths": [
+        {
+          "path_id": "PATH_101",
+          "nodes": ["C102", "D901", "C904", "B221"],
+          "edges": [],
+          "path_type": "DEVICE_SYNDICATE",
+          "risk_score": 0.88
+        }
+      ],
+      "suspicious_connections": []
+    },
+    "evidences": [
+      {
+        "id": "EV_101",
+        "type": "IMPOSSIBLE_TRAVEL",
+        "description": "Location jump from Chennai to London in 120 seconds.",
+        "source": "fraud_rules",
+        "timestamp": "2026-10-08T20:40:30Z",
+        "related_entity": "185.220.101.4",
+        "observed_value": "8000 km in 2 min",
+        "severity": "CRITICAL"
+      }
+    ],
+    "counter_evidences": [],
+    "similar_cases": [],
+    "risk_score": 94.0,
+    "ai_explanation": "Critical risk due to IMPOSSIBLE_TRAVEL (Chennai -> London in 2m), DEVICE_SYNDICATE across 5 accounts, and a VELOCITY_BURST spike.",
+    "recommended_action": "BLOCK",
+    "status": "PENDING_REVIEW"
+  }
+  ```
 
 ### `POST /investigations`
 * **Purpose**: Manually trigger an autonomous investigation on an arbitrary transaction ID.
@@ -100,7 +191,7 @@ This document specifies the REST API endpoints and WebSocket channels for the Vi
   ```json
   {
     "action": "BLOCK",
-    "reason": "Confirmed ATO pattern via device sharing analysis.",
+    "reason": "Confirmed IMPOSSIBLE_TRAVEL and DEVICE_SYNDICATE patterns.",
     "analyst_id": "ANALYST_42"
   }
   ```
@@ -128,6 +219,16 @@ This document specifies the REST API endpoints and WebSocket channels for the Vi
         "scenario_id": "ATO_BURST_01",
         "name": "Account Takeover Surge",
         "description": "Simulates 50 ATO transactions across high-value accounts."
+      },
+      {
+        "scenario_id": "TRAVEL_JUMP_01",
+        "name": "Impossible Travel Wave",
+        "description": "Simulates rapid cross-country geolocation jumps."
+      },
+      {
+        "scenario_id": "SYNDICATE_BURST_01",
+        "name": "Device Syndicate Rapid Fire",
+        "description": "Simulates multi-account device sharing and velocity burst."
       }
     ]
   }
@@ -135,7 +236,7 @@ This document specifies the REST API endpoints and WebSocket channels for the Vi
 
 ### `POST /attacks/trigger`
 * **Purpose**: Launch a synthetic attack scenario into the transaction stream.
-* **Request Body**: `{"scenario_id": "ATO_BURST_01", "rate_per_sec": 10}`
+* **Request Body**: `{"scenario_id": "SYNDICATE_BURST_01", "rate_per_sec": 10}`
 * **Response** (202 Accepted): `{"simulation_id": "SIM_901", "status": "RUNNING"}`
 
 ### `GET /memory/similar/{case_id}`
