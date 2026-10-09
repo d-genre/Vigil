@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 import numpy as np
-from backend.fraud_patterns.velocity_burst import detect_velocity_burst
+from fraud.velocity_burst import detect_velocity_burst
 
 
 def make_tx(tx_id, ts, acc, amount=100.0, is_fraud=0):

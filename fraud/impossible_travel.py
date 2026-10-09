@@ -14,6 +14,9 @@ CITIES_CLEAN_PATH = PROJECT_ROOT / "data" / "processed" / "raw_clean" / "cities_
 
 def load_cities_clean(data_path: Optional[Path] = None) -> pd.DataFrame:
     path = data_path or CITIES_CLEAN_PATH
+    if not path.exists():
+        from ml import data_loader
+        return data_loader.load_cities(processed=True)
     return pd.read_csv(path)
 
 def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:

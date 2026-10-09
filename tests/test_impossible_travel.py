@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 import numpy as np
-from backend.fraud_patterns.impossible_travel import detect_impossible_travel, haversine
+from fraud.impossible_travel import detect_impossible_travel, haversine
 
 CITIES_DATA = [
     {"city": "CityA", "country": "CountryA", "lat": 0.0, "lon": 0.0},

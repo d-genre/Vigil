@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 import numpy as np
-from backend.fraud_patterns.rapid_drain import detect_rapid_drain
+from fraud.rapid_drain import detect_rapid_drain
 
 
 @pytest.fixture

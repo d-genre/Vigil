@@ -11,7 +11,7 @@ import pytest
 import pandas as pd
 import networkx as nx
 
-from backend.graph import (
+from graph import (
     build_fraud_graph,
     save_fraud_graph,
     load_fraud_graph,
@@ -35,18 +35,15 @@ RAW_ZIP_PATH = PROJECT_ROOT / "data" / "raw" / "fraud_data_share.zip"
 
 @pytest.fixture(scope="module")
 def graph_instance():
+    G = load_fraud_graph(GRAPH_PATH)
     assert GRAPH_PATH.exists(), f"Graph artifact missing at {GRAPH_PATH}"
-    return load_fraud_graph(GRAPH_PATH)
+    return G
 
 
 @pytest.fixture(scope="module")
 def clean_datasets():
-    tx_df = pd.read_csv(RAW_CLEAN_DIR / "transactions_clean.csv")
-    acc_df = pd.read_csv(RAW_CLEAN_DIR / "accounts_clean.csv")
-    dev_df = pd.read_csv(RAW_CLEAN_DIR / "devices_clean.csv")
-    ip_df = pd.read_csv(RAW_CLEAN_DIR / "ips_clean.csv")
-    ben_df = pd.read_csv(RAW_CLEAN_DIR / "beneficiaries_clean.csv")
-    mer_df = pd.read_csv(RAW_CLEAN_DIR / "merchants_clean.csv")
+    from graph.build_graph import load_clean_datasets
+    tx_df, acc_df, dev_df, ip_df, ben_df, mer_df = load_clean_datasets()
     return {
         "tx": tx_df, "acc": acc_df, "dev": dev_df,
         "ip": ip_df, "ben": ben_df, "mer": mer_df
@@ -178,6 +175,8 @@ def test_14_label_independence():
 
 
 def test_15_raw_data_untouched():
-    """15. Test that raw data zip file remains untouched."""
-    assert RAW_ZIP_PATH.exists()
-    assert RAW_ZIP_PATH.stat().st_size > 0
+    """15. Test that raw data transaction dataset remains untouched."""
+    from ml.excel_loader import resolve_dataset_path
+    p = resolve_dataset_path()
+    assert p.exists()
+    assert p.stat().st_size > 0

@@ -13,7 +13,7 @@ from backend.adapters.detector_adapter import (
     evaluate_all_seven_vigil_patterns,
     map_detector_score_to_confidence,
 )
-from backend.fraud_patterns.aggregator import run_all_detectors
+from fraud.aggregator import run_all_detectors
 from schemas.evidence import EvidenceItem
 from schemas.investigation import (
     FraudPatternResult,

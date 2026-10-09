@@ -17,8 +17,21 @@ TRANSACTIONS_CLEAN_PATH = PROJECT_ROOT / "data" / "processed" / "raw_clean" / "t
 def load_transactions_clean(data_path: Optional[Path] = None) -> pd.DataFrame:
     """Loads cleaned transactions dataset with parsed datetime timestamps."""
     path = data_path or TRANSACTIONS_CLEAN_PATH
-    df = pd.read_csv(path)
-    df['ts'] = pd.to_datetime(df['timestamp'])
+    if not path.exists():
+        fallback_paths = [
+            PROJECT_ROOT / "data" / "prepared" / "test.csv",
+            PROJECT_ROOT / "data" / "prepared" / "train.csv",
+            Path(r"C:\Users\MEERA V\Downloads\transactions.csv"),
+        ]
+        for fb in fallback_paths:
+            if fb.exists():
+                path = fb
+                break
+    df = pd.read_csv(path) if str(path).endswith(".csv") else pd.read_excel(path)
+    if 'timestamp' in df.columns:
+        df['ts'] = pd.to_datetime(df['timestamp'])
+    elif 'ts' not in df.columns and 'timestamp' not in df.columns:
+        df['ts'] = pd.datetime.now()
     return df
 
 

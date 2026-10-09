@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 import numpy as np
-from backend.fraud_patterns.device_syndicate import detect_device_syndicate, is_valid_device_id
+from fraud.device_syndicate import detect_device_syndicate, is_valid_device_id
 
 
 @pytest.fixture

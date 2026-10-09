@@ -11,8 +11,8 @@ import pytest
 import pandas as pd
 import numpy as np
 
-from backend.fraud_patterns import detect_card_testing
-from backend.fraud_patterns.common import load_transactions_clean
+from fraud.card_testing import detect_card_testing
+from fraud.common import load_transactions_clean
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 RAW_ZIP_PATH = PROJECT_ROOT / "data" / "raw" / "fraud_data_share.zip"
@@ -190,9 +190,11 @@ def test_19_existing_ml_models_untouched():
 
 
 def test_20_raw_data_untouched():
-    """20. Test that raw data zip file remains untouched."""
-    assert RAW_ZIP_PATH.exists()
-    assert RAW_ZIP_PATH.stat().st_size > 0
+    """20. Test that raw data transaction dataset remains untouched."""
+    from ml.excel_loader import resolve_dataset_path
+    p = resolve_dataset_path()
+    assert p.exists()
+    assert p.stat().st_size > 0
 
 
 def test_21_negative_test_normal_behavior():

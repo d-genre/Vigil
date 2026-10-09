@@ -13,7 +13,7 @@ from catboost import CatBoostClassifier
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.ml import train_catboost
+from ml import train_catboost
 
 
 @pytest.fixture(scope="module")

@@ -7,7 +7,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from unittest.mock import patch, MagicMock
-from backend.fraud_patterns.aggregator import (
+from fraud.aggregator import (
     run_all_detectors,
     STATUS_SUCCESS_FLAGGED,
     STATUS_SUCCESS_CLEAN,
@@ -48,7 +48,7 @@ def clean_mocks():
     }
 
 def test_all_detectors_clean(clean_mocks):
-    with patch.dict('backend.fraud_patterns.aggregator.DETECTORS', clean_mocks):
+    with patch.dict('fraud.aggregator.DETECTORS', clean_mocks):
         res = run_all_detectors("C123")
         assert res["overall_score"] == 0.0
         assert res["overall_severity"] == "NONE"
@@ -60,7 +60,7 @@ def test_all_detectors_clean(clean_mocks):
 def test_one_detector_flags(clean_mocks):
     clean_mocks["VELOCITY_BURST"].return_value = create_mock_result("VELOCITY_BURST", True, 70.0, txs=["tx1", "tx2"])
     
-    with patch.dict('backend.fraud_patterns.aggregator.DETECTORS', clean_mocks):
+    with patch.dict('fraud.aggregator.DETECTORS', clean_mocks):
         res = run_all_detectors("C123")
         assert res["overall_score"] == 70.0
         assert res["overall_severity"] == "HIGH"
@@ -72,7 +72,7 @@ def test_overlapping_transactions_deduplication(clean_mocks):
     clean_mocks["VELOCITY_BURST"].return_value = create_mock_result("VELOCITY_BURST", True, 80.0, txs=["tx1", "tx2"])
     clean_mocks["RAPID_DRAIN"].return_value = create_mock_result("RAPID_DRAIN", True, 70.0, txs=["tx1", "tx2"])
     
-    with patch.dict('backend.fraud_patterns.aggregator.DETECTORS', clean_mocks):
+    with patch.dict('fraud.aggregator.DETECTORS', clean_mocks):
         res = run_all_detectors("C123")
         # Base 80.0 + 5.0 (for complete overlap) = 85.0
         assert res["overall_score"] == 85.0
@@ -83,7 +83,7 @@ def test_unique_transactions_add_higher_risk(clean_mocks):
     clean_mocks["VELOCITY_BURST"].return_value = create_mock_result("VELOCITY_BURST", True, 80.0, txs=["tx1", "tx2"])
     clean_mocks["RAPID_DRAIN"].return_value = create_mock_result("RAPID_DRAIN", True, 70.0, txs=["tx1", "tx3"])
     
-    with patch.dict('backend.fraud_patterns.aggregator.DETECTORS', clean_mocks):
+    with patch.dict('fraud.aggregator.DETECTORS', clean_mocks):
         res = run_all_detectors("C123")
         # Base 80.0 + 15.0 (for having unique tx3) = 95.0
         assert res["overall_score"] == 95.0
@@ -94,7 +94,7 @@ def test_score_bounded_to_100(clean_mocks):
     clean_mocks["RAPID_DRAIN"].return_value = create_mock_result("RAPID_DRAIN", True, 80.0, txs=["tx2"])
     clean_mocks["CARD_TESTING"].return_value = create_mock_result("CARD_TESTING", True, 60.0, txs=["tx3"])
     
-    with patch.dict('backend.fraud_patterns.aggregator.DETECTORS', clean_mocks):
+    with patch.dict('fraud.aggregator.DETECTORS', clean_mocks):
         res = run_all_detectors("C123")
         # Base 90 + 15 + 15 = 120, capped at 100
         assert res["overall_score"] == 100.0
@@ -103,14 +103,14 @@ def test_missing_data_status(clean_mocks):
     # Return empty metrics -> should be flagged as SKIPPED_MISSING_DATA
     clean_mocks["MULE_CHAIN"].return_value = create_mock_result("MULE_CHAIN", False, 0.0, metrics={})
     
-    with patch.dict('backend.fraud_patterns.aggregator.DETECTORS', clean_mocks):
+    with patch.dict('fraud.aggregator.DETECTORS', clean_mocks):
         res = run_all_detectors("C123")
         assert res["execution_status"]["MULE_CHAIN"] == STATUS_SKIPPED_MISSING_DATA
 
 def test_detector_exception_is_isolated(clean_mocks):
     clean_mocks["CARD_TESTING"].side_effect = ValueError("Some internal error")
     
-    with patch.dict('backend.fraud_patterns.aggregator.DETECTORS', clean_mocks):
+    with patch.dict('fraud.aggregator.DETECTORS', clean_mocks):
         res = run_all_detectors("C123")
         assert res["execution_status"]["CARD_TESTING"] == STATUS_ERROR
         # Other detectors should still succeed
@@ -119,7 +119,7 @@ def test_detector_exception_is_isolated(clean_mocks):
 
 def test_point_in_time_passed_down(clean_mocks):
     as_of = "2023-10-01 12:00:00"
-    with patch.dict('backend.fraud_patterns.aggregator.DETECTORS', clean_mocks):
+    with patch.dict('fraud.aggregator.DETECTORS', clean_mocks):
         run_all_detectors("C123", as_of_timestamp=as_of)
         for mock_func in clean_mocks.values():
             # Check that as_of_timestamp was passed to each detector
@@ -129,7 +129,7 @@ def test_input_dataframes_unchanged(clean_mocks):
     df = pd.DataFrame({"A": [1, 2]})
     original_df = df.copy()
     
-    with patch.dict('backend.fraud_patterns.aggregator.DETECTORS', clean_mocks):
+    with patch.dict('fraud.aggregator.DETECTORS', clean_mocks):
         run_all_detectors("C123", transactions_df=df)
         
     pd.testing.assert_frame_equal(df, original_df)
@@ -138,7 +138,7 @@ def test_malformed_detector_result_schema(clean_mocks):
     # Missing 'detected' key
     clean_mocks["CARD_TESTING"].return_value = {"score": 50.0}
     
-    with patch.dict('backend.fraud_patterns.aggregator.DETECTORS', clean_mocks):
+    with patch.dict('fraud.aggregator.DETECTORS', clean_mocks):
         res = run_all_detectors("C123")
         assert res["execution_status"]["CARD_TESTING"] == STATUS_ERROR
         assert "execution failed" in res["detector_results"]["CARD_TESTING"]["explanation"].lower()
@@ -157,7 +157,7 @@ def test_malformed_score_is_isolated(clean_mocks, bad_score):
     clean_mocks["CARD_TESTING"].return_value = create_mock_result("CARD_TESTING", True, bad_score, txs=["tx1"])
     clean_mocks["VELOCITY_BURST"].return_value = create_mock_result("VELOCITY_BURST", True, 70.0, txs=["tx2"])
     
-    with patch.dict('backend.fraud_patterns.aggregator.DETECTORS', clean_mocks):
+    with patch.dict('fraud.aggregator.DETECTORS', clean_mocks):
         res = run_all_detectors("C123")
         
         # CARD_TESTING should fail
@@ -182,7 +182,7 @@ def test_malformed_transactions_collection_is_isolated(clean_mocks, bad_txs):
     clean_mocks["CARD_TESTING"].return_value = mock_res
     clean_mocks["VELOCITY_BURST"].return_value = create_mock_result("VELOCITY_BURST", True, 70.0, txs=["tx2"])
     
-    with patch.dict('backend.fraud_patterns.aggregator.DETECTORS', clean_mocks):
+    with patch.dict('fraud.aggregator.DETECTORS', clean_mocks):
         res = run_all_detectors("C123")
         
         assert res["execution_status"]["CARD_TESTING"] == STATUS_ERROR
@@ -200,7 +200,7 @@ def test_malformed_transaction_id_is_isolated(clean_mocks, bad_tx_list):
     clean_mocks["CARD_TESTING"].return_value = mock_res
     clean_mocks["VELOCITY_BURST"].return_value = create_mock_result("VELOCITY_BURST", True, 70.0, txs=["tx2"])
     
-    with patch.dict('backend.fraud_patterns.aggregator.DETECTORS', clean_mocks):
+    with patch.dict('fraud.aggregator.DETECTORS', clean_mocks):
         res = run_all_detectors("C123")
         
         assert res["execution_status"]["CARD_TESTING"] == STATUS_ERROR

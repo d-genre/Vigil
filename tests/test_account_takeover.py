@@ -1,6 +1,6 @@
 import pytest
 import pandas as pd
-from backend.fraud_patterns.account_takeover import detect_account_takeover
+from fraud.account_takeover import detect_account_takeover
 
 @pytest.fixture
 def sample_ato_data():

@@ -17,9 +17,10 @@ Enforces strict correctness rules:
 import copy
 import hashlib
 import logging
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-from schemas.evidence import EvidenceItem
+from schemas.evidence import EvidenceItem, CounterEvidenceItem
 from schemas.investigation import (
     FraudPatternResult,
     GraphAnalysisResult,
@@ -126,45 +127,30 @@ def adapt_detector_result_to_vigil_pattern(
     first_tx = transactions[0] if transactions else "NO_TX"
     ev_id = _generate_evidence_id(detector_name, first_tx)
 
-    # Correctness constraint: Only emit COUNTER_EVIDENCE if execution succeeded cleanly on actual data.
-    # Missing data or execution errors must NEVER become counter-evidence (proof of innocence).
     status = execution_status or res.get("status")
     if not status:
         status = "SUCCESS_FLAGGED" if detected else "SUCCESS_CLEAN"
 
     if detected:
         ev_item = EvidenceItem(
-            evidence_id=ev_id,
-            signal_type=detector_name,
-            category="INDICATOR",
+            id=ev_id,
+            type=detector_name,
             description=explanation if explanation else f"{detector_name} flagged risk signal.",
-            weight=confidence,
             source="fraud_rules",
-            metadata={
-                "raw_score": raw_score,
-                "severity": severity,
-                "flagged_transactions": transactions,
-                "entities": entities,
-            },
+            timestamp=datetime.now().isoformat(),
+            severity=severity if severity != "NONE" else "HIGH",
         )
         evidence_items.append(ev_item)
     elif status in ("SUCCESS_CLEAN", "SUCCESS"):
-        ev_item = EvidenceItem(
-            evidence_id=ev_id,
-            signal_type=detector_name,
-            category="COUNTER_EVIDENCE",
+        ev_item = CounterEvidenceItem(
+            id=ev_id,
+            type=detector_name,
             description=explanation if explanation else f"{detector_name} completed clean evaluation.",
-            weight=round(1.0 - confidence, 4),
             source="fraud_rules",
-            metadata={
-                "raw_score": raw_score,
-                "severity": severity,
-                "flagged_transactions": transactions,
-                "entities": entities,
-            },
+            timestamp=datetime.now().isoformat(),
+            relevance_score=round(1.0 - confidence, 4),
         )
         evidence_items.append(ev_item)
-    # If status is SKIPPED_MISSING_DATA or ERROR, no counter-evidence item is generated.
 
     return pattern_result, evidence_items
 
@@ -188,7 +174,7 @@ def evaluate_all_seven_vigil_patterns(
         execution_statuses = {}
 
     collected_evidences: List[EvidenceItem] = []
-    collected_counter_evidences: List[EvidenceItem] = []
+    collected_counter_evidences: List[CounterEvidenceItem] = []
     pattern_results_map: Dict[str, FraudPatternResult] = {}
 
     # 1. Process standard Stage 8B detector outputs
@@ -199,10 +185,10 @@ def evaluate_all_seven_vigil_patterns(
             pattern_results_map[pat_res.pattern_name] = pat_res
 
         for ev in ev_items:
-            if ev.category == "INDICATOR":
-                collected_evidences.append(ev)
-            else:
+            if isinstance(ev, CounterEvidenceItem):
                 collected_counter_evidences.append(ev)
+            else:
+                collected_evidences.append(ev)
 
     # 2. Evaluate Card Testing
     if "Card Testing" not in pattern_results_map:
@@ -348,14 +334,14 @@ def evaluate_all_seven_vigil_patterns(
     return InvestigationState(
         case_id=case_id,
         transaction=transaction,
-        ml_screening=ml_screening,
-        patterns_detected=[pattern_results_map[p] for p in VIGIL_PATTERNS],
-        graph_result=graph_result,
+        ml_risk_score=ml_screening,
+        matched_patterns=[pattern_results_map[p] for p in VIGIL_PATTERNS if p in pattern_results_map],
+        graph_analysis=graph_result,
         evidences=collected_evidences,
         counter_evidences=collected_counter_evidences,
-        similar_attacks=[],
+        similar_cases=[],
         risk_score=overall_score,
-        llm_summary=f"Investigation completed for account {account_id}. Overall risk score: {overall_score:.1f}.",
+        ai_explanation=f"Investigation completed for account {account_id}. Overall risk score: {overall_score:.1f}.",
         recommended_action=recommended_action,
         status=status,
     )
