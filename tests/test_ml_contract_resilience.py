@@ -22,11 +22,12 @@ def get_base_payload():
         "transaction_type": "TRANSFER"
     }
 
-# 1. Valid responses: LOW, MEDIUM, HIGH
+# 1. Valid responses: LOW, MEDIUM, HIGH, CRITICAL
 @pytest.mark.parametrize("prob, risk_label, should_investigate", [
     (0.15, "LOW", False),
     (0.55, "MEDIUM", True),
     (0.88, "HIGH", True),
+    (0.95, "CRITICAL", True),
 ])
 def test_valid_responses(prob, risk_label, should_investigate):
     with patch("backend.ml_service.ScreeningService.screen", return_value=(prob, risk_label)):
