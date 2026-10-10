@@ -6,9 +6,10 @@ import type {
   EgoNetworkResponse,
   TemporalMapResponse,
   DossierResponse,
+  EvaluationResponse,
 } from '../types/api'
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
+const BASE_URL = (import.meta.env.VITE_BACKEND_URL || 'https://vigil-cmpd.onrender.com').replace(/\/$/, '')
 
 class ApiError extends Error {
   status: number
@@ -81,5 +82,15 @@ export const apiService = {
   async getDbTransactions(limit = 50, offset = 0): Promise<StreamResponse> {
     const res = await fetch(`${BASE_URL}/transactions?limit=${limit}&offset=${offset}`)
     return handleResponse<StreamResponse>(res)
+  },
+
+  async getEvaluation(): Promise<EvaluationResponse> {
+    try {
+      const res = await fetch(`${BASE_URL}/api/evaluation`)
+      return await handleResponse<EvaluationResponse>(res)
+    } catch {
+      const res = await fetch(`${BASE_URL}/evaluation`)
+      return await handleResponse<EvaluationResponse>(res)
+    }
   },
 }

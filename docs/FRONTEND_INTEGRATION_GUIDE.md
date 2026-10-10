@@ -1,8 +1,8 @@
 # VIGIL — Frontend Integration & Component Walkthrough Guide
 
 > **Target Audience**: Frontend Developer (React + TypeScript + Tailwind CSS)  
-> **Backend Base URL**: `http://localhost:8000`  
-> **WebSocket URL**: `ws://localhost:8000/ws/live`  
+> **Backend Base URL**: `https://vigil-cmpd.onrender.com`  
+> **WebSocket URL**: `wss://vigil-cmpd.onrender.com/ws/live`  
 
 ---
 
@@ -256,7 +256,7 @@ export interface DossierData {
 ## 5. React API Client Service (`src/services/api.ts`)
 
 ```typescript
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = 'https://vigil-cmpd.onrender.com';
 
 export async function fetchStream(tick = false) {
   const res = await fetch(`${BASE_URL}/api/transactions/stream?tick=${tick}`);

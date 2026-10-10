@@ -151,7 +151,7 @@ python -m uvicorn backend.main:app --reload --port 8000
 
 ### 4. Interactive API Documentation
 Open your browser and navigate to:  
-👉 `http://localhost:8000/docs`
+👉 `https://vigil-cmpd.onrender.com/docs`
 
 ### 5. Run Verification Audit Suite
 ```bash

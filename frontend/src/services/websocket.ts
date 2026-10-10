@@ -15,7 +15,7 @@ class WebSocketService {
   private reconnectTimer: number | null = null
 
   private getWsUrl(): string {
-    const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
+    const baseUrl = (import.meta.env.VITE_BACKEND_URL || 'https://vigil-cmpd.onrender.com').replace(/\/$/, '')
     const wsProtocol = baseUrl.startsWith('https') ? 'wss' : 'ws'
     const host = baseUrl.replace(/^https?:\/\//, '')
     return `${wsProtocol}://${host}/ws/live`
