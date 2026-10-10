@@ -1,99 +1,45 @@
 # Vigil — Autonomous Fraud Investigation Agent
 
-> **One-Line Pitch**: Vigil detects suspicious transactions, reconstructs fraud networks, identifies attack patterns, retrieves similar historical attacks, collects auditable evidence, explains the risk, and pauses for human decision.
+**One-Line Pitch:** Vigil streams live transactions, screens them using CatBoost and TreeSHAP, reconstructs dynamic fraud graphs and geo-travel maps, synthesizes judicial prosecution vs. defense evidence, and generates audit-grade PDF dossiers for human-in-the-loop decisions.
 
 ---
 
 ## 🚀 Overview
 
-Vigil is an AI-powered autonomous fraud investigation system developed for the **APEX06 / Fraud-Ring Radar** 36-hour hackathon. 
+**Vigil** is an AI-powered autonomous fraud investigation and triage platform designed for modern financial compliance.
 
-Unlike traditional static fraud classifiers that merely output binary flags, Vigil performs end-to-end autonomous investigation:
-1. **Screening**: Screens incoming transactions instantly via a fast CatBoost model.
-2. **Orchestration**: Triggers a LangGraph investigation agent for medium/high risk cases.
-3. **Pattern & Graph Analysis**: Evaluates 7 complex fraud pattern signatures and constructs NetworkX fraud topology graphs.
-4. **Vector Memory**: Searches historical attack vectors using FAISS vector similarity.
-5. **Auditable Evidence**: Gathers positive risk indicators alongside counter-evidence ("Why NOT to block").
-6. **LLM Reasoning**: Generates structured, explainable case summaries and recommended actions without hallucinated data.
-7. **Human Governance**: Presents findings to human fraud analysts for final decision (`APPROVE`, `HOLD`, `ESCALATE`, `BLOCK`).
+Unlike traditional static fraud classifiers that merely output opaque binary flags, Vigil operates as an end-to-end autonomous investigation cockpit:
+
+1. **Continuous Ingestion & Ticking Stream:** Ingests live transactional data via an automated 15-second simulation loop backed by an in-memory ring buffer.
+2. **Behavioral Screening & TreeSHAP Drivers:** Evaluates 30+ features using CatBoost and extracts exact feature-level TreeSHAP contributions to quantify risk drivers without black-box ambiguity.
+3. **Behavioral Pattern Recognition:** Analyzes 7 specialized fraud signatures (Impossible Travel, Velocity Burst, Smurfing, ATO, Device Syndicates, Card Testing, and Rapid Drain).
+4. **Dynamic Network & Geo Forensics:** Reconstructs fraudster ego networks (degrees of separation across merchants, IPs, and devices) and tracks global IP hops with impossible travel velocity calculations.
+5. **Judicial Evidence Synthesis:** Functions as a digital fraud prosecutor, balancing incriminating **Prosecution Evidence** against mitigating **Defense Counter-Evidence** ("Why NOT to block").
+6. **Live Pitch Attack Injection:** Features an unlabelled, single-click attack trigger to inject anomalies directly into the stream for live validation.
+7. **On-Demand PDF Dossier Exporter:** Generates full, multi-section binary PDF investigation case files for human analysts, compliance officers, and legal auditors.
 
 ---
 
 ## ✨ Key Features
 
-* ⚡ **Real-time Transaction Screening**: High-throughput screening layer powered by CatBoost.
-* 🔍 **Seven Specialized Fraud Pattern Detectors**: Card Testing, ATO, Mule Account Chain, Synthetic Identity, Push Payment Scam, Beneficiary ATO, and Coordinated Fraud Ring.
-* 🕸️ **Fraud Network Graph**: Reconstructs account-device-IP relationships and detects multi-hop money laundering paths using NetworkX.
-* 🛡️ **Evidence & Counter-Evidence Engine**: Collects balance of evidence supporting both risk escalation and approval justification.
-* 🧠 **Vector Similarity Memory**: FAISS-backed semantic search for matching current topologies to historical attack databases.
-* 🤖 **Autonomous Agentic Workflow**: LangGraph state machine orchestrating multi-step investigation processes.
-* 💬 **Grounded LLM Explanation**: Transparent, auditable natural language explanations derived strictly from structured evidence.
-* 👤 **Human-in-the-Loop Control**: Analyst decision dashboard preserving human control over blocking actions.
-* 🧪 **Attack Lab & Simulator**: Interactive attack pattern injection for testing system resiliency.
-* 📊 **Evaluation Dashboard**: Live tracking of precision, recall, detection latency, and false positive rates.
+* ⚡ **15-Second Automated Stream Engine:** In-memory `deque` buffer running an autonomous background heartbeat, continuously scoring benign transactions alongside anomalous edge cases.
+* 🎯 **Single-Click Live Attack Trigger:** On-demand injection endpoint (`/api/transactions/simulate-attack`) that routes an untagged synthetic attack into the live screening pipeline without exposing pre-selected fraud labels.
+* 🌲 **TreeSHAP Explainability Layer:** Direct mathematical attribution of risk factors (e.g., `geo_velocity: +0.412`, `device_trust_score: -0.310`) to justify flags transparently.
+* 🔍 **7 Behavioral Anomaly Detectors:** Dedicated heuristic modules targeting Impossible Travel (>800 km/h), Velocity Bursts, Mule Chains, Account Takeover (ATO), Device Syndicates, Card Testing, and Rapid Balance Drain.
+* 🕸️ **Dynamic Fraudster Ego Network:** Topology graph derived dynamically per transaction, visually mapping hops across accounts, compromised devices, Tor exit IPs, and mule endpoints with narrative analysis.
+* 🌍 **Temporal Geo-Velocity Map:** Global interactive IP hop tracker calculating geographical transit speed ($\Delta t$ vs distance) to pinpoint physical impossibility violations.
+* ⚖️ **Judicial Dossier Engine:** Balanced investigative evaluation contrasting positive risk flags with mitigating factors (3DS verification, habitual merchant match, trusted billing zip).
+* 📑 **Audit-Ready PDF Dossier Exporter:** High-resolution PDF generation endpoint (`/api/dossier/{id}/pdf`) compiling the case summary, quantitative feature tables, dual-column evidence files, and recommended remediation protocols.
+* 👤 **Human-in-the-Loop Governance:** Defensible verdict recommendations (`APPROVE`, `STEP_UP_VERIFICATION`, `DECLINE_AND_FREEZE`) preserving final decision authority for fraud analysts.
 
 ---
 
 ## 🛠️ Technology Stack
 
 | Domain | Technologies |
-|---|---|
-| **Core & Backend** | Python 3.10+, FastAPI, Uvicorn, Pydantic, SQLite |
-| **ML & Analytics** | CatBoost, Pandas, NumPy, Logistic Regression |
-| **Orchestration** | LangGraph |
-| **Graph & Vectors** | NetworkX, FAISS (`faiss-cpu`), Sentence Transformers |
-| **Frontend UI** | React, TypeScript, Tailwind CSS, Cytoscape.js, Recharts |
-
----
-
-## 👥 Team & Module Ownership
-
-| Member | Domain | Owned Directories | Focus |
-|---|---|---|---|
-| **Member 1** | ML Engineer | `ml/` | CatBoost classifier, feature engineering, baselines, model evaluation. |
-| **Member 2** | Fraud & Graph | `fraud/`, `graph/` | 7 fraud pattern detectors, behavioral rules, NetworkX graph analysis. |
-| **Member 3** | Frontend | `frontend/` | React dashboard, live stream, network visualizer, evaluation UI. |
-| **Member 4** | Backend & Integration | `backend/` | FastAPI routes, LangGraph workflow, FAISS memory, SQLite integration. |
-| **Shared** | Architecture & Contracts | `schemas/`, `docs/` | Shared Pydantic schemas, data/API specifications. |
-
----
-
-## 💻 Getting Started
-
-### Prerequisites
-- Python 3.10+
-- Node.js 18+ (for frontend development)
-
-### Setup & Backend Execution
-1. Clone the repository and navigate to the project directory.
-2. Create and activate a Python virtual environment:
-   ```bash
-   python -m venv .venv
-   # Windows PowerShell:
-   .\.venv\Scripts\Activate.ps1
-   # Linux/macOS:
-   source .venv/bin/activate
-   ```
-3. Install backend dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Copy the environment variables configuration:
-   ```bash
-   cp .env.example .env
-   ```
-5. Launch the backend API server:
-   ```bash
-   uvicorn backend.main:app --reload
-   ```
-6. Access the API documentation at `http://localhost:8000/docs`.
-
----
-
-## 📄 Documentation
-
-- [AGENTS.md](file:///c:/Divya/College/hackathons/agnitia/AGENTS.md): AI Agent governance and rules.
-- [ARCHITECTURE.md](file:///c:/Divya/College/hackathons/agnitia/ARCHITECTURE.md): System architecture and data pipeline specification.
-- [CONTRIBUTING.md](file:///c:/Divya/College/hackathons/agnitia/CONTRIBUTING.md): Git branching model and PR standards.
-- [DATA_CONTRACTS.md](file:///c:/Divya/College/hackathons/agnitia/docs/DATA_CONTRACTS.md): Shared Pydantic and JSON data schemas.
-- [API_CONTRACTS.md](file:///c:/Divya/College/hackathons/agnitia/docs/API_CONTRACTS.md): REST API and WebSocket specifications.
+| --- | --- |
+| **Core & Backend** | Python 3.10+, FastAPI, Uvicorn, Pydantic v2, `asyncio` |
+| **ML & Explainability** | CatBoost Classifier, TreeSHAP, NumPy, Pandas |
+| **Graph & Spatial Analysis** | NetworkX, GeoPy, Plotly Geo / Mapbox |
+| **Dossier & Document Export** | ReportLab / fpdf2, in-memory `io.BytesIO` Streaming |
+| **Frontend UI** | React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons |
