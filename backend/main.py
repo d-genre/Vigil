@@ -34,6 +34,23 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+def root():
+    """Root endpoint welcoming users and pointing to API documentation."""
+    return {
+        "message": "Welcome to Vigil Fraud Investigation Command Center API",
+        "docs_url": "http://localhost:8000/docs",
+        "health_check": "http://localhost:8000/health",
+        "active_endpoints": [
+            "/api/transactions/stream",
+            "/api/transactions/simulate-attack",
+            "/api/graph/{transaction_id}",
+            "/api/dossier/{transaction_id}",
+            "/api/dossier/{transaction_id}/pdf"
+        ]
+    }
+
+
 @app.get("/health")
 def health_check():
     """System health check endpoint."""

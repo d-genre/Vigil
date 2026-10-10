@@ -3,7 +3,7 @@ import pandas as pd
 from backend.attack_simulator import AttackSimulator
 
 def run_pipeline():
-    print("🚀 Initializing Vigil Comprehensive Pipeline & Artifact Generator...")
+    print("[INFO] Initializing Vigil Comprehensive Pipeline & Artifact Generator...")
     
     # 1. Ensure all target directories exist
     raw_data_dir = os.path.join("data", "raw")
@@ -14,7 +14,7 @@ def run_pipeline():
         os.makedirs(d, exist_ok=True)
     
     # 2. Run the Attack Simulator (Step 1)
-    print("📊 Generating synthetic attack and baseline traffic streams...")
+    print("[INFO] Generating synthetic attack and baseline traffic streams...")
     simulator = AttackSimulator()
     stream_data = simulator.generate_full_stream()
     
@@ -29,12 +29,12 @@ def run_pipeline():
     # 5. Save raw data
     raw_output_path = os.path.join(raw_data_dir, "transactions.csv")
     df.to_csv(raw_output_path, index=False)
-    print(f"✅ Saved raw transactions to {raw_output_path}")
+    print(f"[SUCCESS] Saved raw transactions to {raw_output_path}")
     
     # 6. Save clean processed data for tests expecting transactions_clean.csv
     clean_output_path = os.path.join(processed_clean_dir, "transactions_clean.csv")
     df.to_csv(clean_output_path, index=False)
-    print(f"✅ Saved processed clean transactions to {clean_output_path}")
+    print(f"[SUCCESS] Saved processed clean transactions to {clean_output_path}")
     
     # 7. Create mock/baseline prediction report files to satisfy model verification tests
     dummy_predictions = pd.DataFrame({
@@ -44,9 +44,9 @@ def run_pipeline():
     })
     dummy_predictions.to_csv(os.path.join(reports_dir, "isolation_test_predictions.csv"), index=False)
     dummy_predictions.to_csv(os.path.join(reports_dir, "catboost_validation_predictions.csv"), index=False)
-    print(f"✅ Generated mock prediction reports in {reports_dir}/")
+    print(f"[SUCCESS] Generated mock prediction reports in {reports_dir}/")
 
-    print("🎉 Pipeline data preparation complete!")
+    print("[SUCCESS] Pipeline data preparation complete!")
     return df
 
 if __name__ == "__main__":
