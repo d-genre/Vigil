@@ -1,6 +1,6 @@
 # VIGIL — Autonomous AI Fraud Governance & Judicial Command Center
 
-> **One-Line Pitch**: Vigil replaces opaque binary fraud scoring with an **Autonomous Judicial Investigation Engine** — screening transactions, detecting complex behavioral patterns, mapping fraud ring graph topologies, and synthesizing auditable **Prosecution vs. Defense Evidence** into downloadable Judicial Dossiers.
+> **One-Line Pitch**: Vigil replaces opaque binary fraud scoring with an **Autonomous Judicial Investigation Engine** — screening live transactions using CatBoost and TreeSHAP, detecting complex behavioral patterns, mapping dynamic fraud ring graph topologies, and synthesizing auditable **Prosecution vs. Defense Evidence** into downloadable Judicial Dossiers.
 
 ---
 
@@ -62,7 +62,7 @@
 
 ### Pillar 1: High-Throughput ML Screening & TreeSHAP Explainability (`ml/`)
 - Powered by a **CatBoost classifier** trained on 30+ dynamic behavioral features (velocity windows, haversine location distance, device reuse ratios, historical baseline deviations).
-- Generates feature-level **TreeSHAP explainability drivers** (`ip_risk_score: +0.412`, `device_trust_score: -0.310`) to quantify exact risk contributors.
+- Generates feature-level **TreeSHAP explainability drivers** (`ip_risk_score: +0.412`, `device_trust_score: -0.310`) to quantify exact risk contributors without black-box ambiguity.
 
 ### Pillar 2: 7 Specialized Behavioral Pattern Detectors (`fraud/`)
 1. **Impossible Travel**: Flags transactions occurring at physical distances requiring impossible speeds (> 900 km/h).
@@ -75,7 +75,7 @@
 
 ### Pillar 3: Heterogeneous Network Topology Engine (`graph/`)
 - Constructs a heterogeneous **NetworkX graph** mapping entity nodes (`TRANSACTION`, `USER_ACCOUNT`, `IP_ADDRESS`, `DEVICE`, `MULE_ACCOUNT`, `MERCHANT`) and relationship edges (`INITIATED`, `ORIGINATED_FROM`, `USED_DEVICE`, `SPLIT_TRANSFER`).
-- Detects multi-account smurfing rings, calculates subgraph density, and flags shared infrastructure (Tor exit nodes, banned GUIDs).
+- Detects multi-account smurfing rings, calculates subgraph density, and flags shared suspicious infrastructure (Tor exit nodes, banned GUIDs).
 
 ### Pillar 4: Judicial Dossier Engine (`backend/dossier_service.py`)
 - Functions like a digital fraud prosecutor:
@@ -107,11 +107,11 @@
 
 | Domain | Technologies |
 |---|---|
-| **Core & Backend** | Python 3.10+, FastAPI, Uvicorn, Pydantic, SQLite |
+| **Core & Backend** | Python 3.10+, FastAPI, Uvicorn, Pydantic v2, SQLite |
 | **ML & Analytics** | CatBoost, TreeSHAP, Pandas, NumPy, Scikit-learn |
 | **Fraud & Graph** | NetworkX, Custom Behavioral Pattern Detectors |
 | **PDF Generation** | FPDF2 |
-| **Frontend Stack** | React, TypeScript, Tailwind CSS, Cytoscape.js |
+| **Frontend Stack** | React 18, Vite, TypeScript, Tailwind CSS, Cytoscape.js |
 
 ---
 

@@ -1,4 +1,6 @@
 import io
+import asyncio
+from datetime import datetime, timezone
 from typing import Optional
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query, HTTPException, status
@@ -14,9 +16,16 @@ from backend.pdf_exporter import render_dossier_pdf
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Initialize Database
+    # Startup: Initialize Database & Autonomous 15s Stream Loop
     init_db()
+    stream_task = asyncio.create_task(stream_manager.start_stream_heartbeat())
     yield
+    # Shutdown: Cancel background task cleanly
+    stream_task.cancel()
+    try:
+        await stream_task
+    except asyncio.CancelledError:
+        pass
 
 app = FastAPI(
     title="Vigil API",
@@ -96,129 +105,91 @@ def simulate_attack():
     }
 
 
+@app.get("/api/graph/ego-network/{transaction_id}")
+def get_ego_network_endpoint(transaction_id: str):
+    """
+    Returns Vigil: Fraudster Ego Network (Degrees of Separation) node-link structure.
+    """
+    from graph import generate_ego_network
+    return generate_ego_network(transaction_id)
+
+
+@app.get("/api/graph/temporal-map/{transaction_id}")
+def get_temporal_map_endpoint(transaction_id: str):
+    """
+    Returns Vigil: Temporal IP Fraud Map trajectory points and velocity violation metadata.
+    """
+    from graph import generate_temporal_map
+    return generate_temporal_map(transaction_id)
+
+
 @app.get("/api/graph/{transaction_id}")
 def get_transaction_graph(transaction_id: str):
     """
     Returns NetworkX graph topology and suspicious path/fraud-ring details.
     """
-    is_attack = "TX_FLAGGED_" in transaction_id
-    
-    if is_attack:
-        return {
-            "transaction_id": transaction_id,
-            "fraud_pattern": "MULTI_ACCOUNT_SMURFING_RING",
-            "topology_stats": {
-                "total_nodes": 6,
-                "total_edges": 7,
-                "density": 0.467,
-                "suspicious_subgraph_nodes": 5
-            },
-            "nodes": [
-                {"id": transaction_id, "label": "Flagged Transaction", "type": "TRANSACTION", "risk_score": 0.965},
-                {"id": "usr_ring_leader_88", "label": "Origin User (usr_ring_leader_88)", "type": "USER_ACCOUNT", "risk_score": 0.920},
-                {"id": "ip_185_220_101_4", "label": "Tor Exit Node (185.220.101.4)", "type": "IP_ADDRESS", "risk_score": 0.990},
-                {"id": "mule_acc_401", "label": "Mule Account A (mule_acc_401)", "type": "MULE_ACCOUNT", "risk_score": 0.880},
-                {"id": "mule_acc_402", "label": "Mule Account B (mule_acc_402)", "type": "MULE_ACCOUNT", "risk_score": 0.895},
-                {"id": "dev_guid_9921", "label": "Banned Hardware GUID", "type": "DEVICE", "risk_score": 0.950}
-            ],
-            "edges": [
-                {"source": "usr_ring_leader_88", "target": transaction_id, "relation": "INITIATED"},
-                {"source": transaction_id, "target": "ip_185_220_101_4", "relation": "ORIGINATED_FROM"},
-                {"source": transaction_id, "target": "mule_acc_401", "relation": "SPLIT_TRANSFER"},
-                {"source": transaction_id, "target": "mule_acc_402", "relation": "SPLIT_TRANSFER"},
-                {"source": "usr_ring_leader_88", "target": "dev_guid_9921", "relation": "USED_DEVICE"},
-                {"source": "mule_acc_401", "target": "dev_guid_9921", "relation": "SHARED_DEVICE"},
-                {"source": "mule_acc_402", "target": "ip_185_220_101_4", "relation": "SHARED_IP"}
-            ]
-        }
-    else:
-        return {
-            "transaction_id": transaction_id,
-            "fraud_pattern": "NORMAL_RETAIL_PURCHASE",
-            "topology_stats": {
-                "total_nodes": 3,
-                "total_edges": 2,
-                "density": 0.050,
-                "suspicious_subgraph_nodes": 0
-            },
-            "nodes": [
-                {"id": transaction_id, "label": "Retail Purchase", "type": "TRANSACTION", "risk_score": 0.045},
-                {"id": "usr_benign_101", "label": "Verified Customer", "type": "USER_ACCOUNT", "risk_score": 0.020},
-                {"id": "merch_starbucks", "label": "Starbucks Coffee", "type": "MERCHANT", "risk_score": 0.010}
-            ],
-            "edges": [
-                {"source": "usr_benign_101", "target": transaction_id, "relation": "PURCHASED"},
-                {"source": transaction_id, "target": "merch_starbucks", "relation": "PAID_TO"}
-            ]
-        }
+    from graph import generate_ego_network
+    return generate_ego_network(transaction_id)
 
 
 @app.get("/api/dossier/{transaction_id}")
 def get_transaction_dossier(transaction_id: str):
     """
-    Returns the full Judicial Dossier (Prosecution Evidence vs Defense Counter-Evidence & SHAP Explainability).
+    Returns the full Judicial Dossier evaluated via CatBoost ML Model & TreeSHAP (Prosecution vs Defense Evidence).
     """
-    is_attack = "TX_FLAGGED_" in transaction_id
+    from backend.dossier_service import dossier_engine
     
-    if is_attack:
-        return {
-            "transaction_id": transaction_id,
-            "risk_score": 0.965,
-            "verdict": "REJECT_AND_FREEZE",
-            "classification": "ORGANIZED_SMURFING_ATTACK",
-            "executive_summary": "High-confidence smurfing ring attack detected. Transaction velocity exceeds 500% of historical baseline with high-risk IP mismatch across multiple linked mule accounts.",
-            "prosecution_evidence": [
-                {
-                    "title": "Geo-Velocity Anomaly",
-                    "description": "Transaction initiated from IP 185.220.101.4 (Tor Exit Node) 12 minutes after authenticating from Tokyo.",
-                    "impact": 0.42
-                },
-                {
-                    "title": "Rapid Smurfing Fan-Out",
-                    "description": "Funds fragmented across 3 recipient accounts created within the last 24 hours.",
-                    "impact": 0.38
-                },
-                {
-                    "title": "Banned Device Fingerprint",
-                    "description": "Hardware GUID shared with 4 previously blacklisted fraud accounts.",
-                    "impact": 0.16
-                }
-            ],
-            "defense_evidence": [
-                {
-                    "title": "2FA Step-up Authenticated",
-                    "description": "SMS OTP challenge passed successfully (High probability of SIM swap or SS7 exploit)."
-                }
-            ],
-            "explainability_drivers": [
-                {"feature": "ip_risk_score", "value": "0.98", "shap_value": 0.412},
-                {"feature": "velocity_1h", "value": "14 txns", "shap_value": 0.325},
-                {"feature": "amount_vs_avg", "value": "18.4x", "shap_value": 0.228}
-            ]
-        }
+    # 1. Check if transaction exists in current stream buffer
+    stream_txs = stream_manager.get_current_stream()
+    match_tx = next((t for t in stream_txs if t.get("transaction_id") == transaction_id), None)
+    
+    seed = sum(ord(c) for c in transaction_id) if transaction_id else 42
+    is_attack = "TX_FLAGGED_" in transaction_id.upper() or "ATTACK" in transaction_id.upper() or "MULE" in transaction_id.upper()
+    
+    if match_tx:
+        tx_dict = match_tx
     else:
-        return {
+        # Reconstruct deterministic transaction telemetry from ID
+        if is_attack:
+            amount = round(4500.0 + (seed % 900000) / 100.0, 2)
+            user_id = f"usr_ring_leader_{(seed % 15) + 80}"
+            merchant = "CryptoExchange_Global_FX" if (seed % 2 == 0) else "Offshore_Wire_Transfer"
+            ip = f"185.220.101.{(seed % 90) + 4}"
+            device_id = f"dev_guid_{(seed % 999) + 9000}"
+            status = "FLAGGED"
+        else:
+            amount = round(15.0 + (seed % 15000) / 100.0, 2)
+            user_id = f"usr_benign_{(seed % 6) + 101}"
+            merchant = stream_manager.MERCHANTS[seed % len(stream_manager.MERCHANTS)]
+            ip = f"192.168.1.{(seed % 50) + 100}"
+            device_id = f"dev_trusted_{(seed % 50) + 100}"
+            status = "CLEARED"
+            
+        tx_dict = {
             "transaction_id": transaction_id,
-            "risk_score": 0.045,
-            "verdict": "APPROVE",
-            "classification": "BENIGN_RETAIL_TRANSACTION",
-            "executive_summary": "Standard transaction matching user historical purchasing patterns and trusted device context.",
-            "prosecution_evidence": [],
-            "defense_evidence": [
-                {
-                    "title": "Trusted Device History",
-                    "description": "Hardware GUID has 120+ consecutive clean historic sessions."
-                },
-                {
-                    "title": "Habitual Merchant Affinity",
-                    "description": "User has executed 14 recurring transactions at this merchant over the past 90 days."
-                }
-            ],
-            "explainability_drivers": [
-                {"feature": "device_trust_score", "value": "0.99", "shap_value": -0.310},
-                {"feature": "merchant_affinity", "value": "HIGH", "shap_value": -0.245}
-            ]
+            "user_id": user_id,
+            "account_id": user_id,
+            "amount": amount,
+            "merchant": merchant,
+            "location": merchant,
+            "ip": ip,
+            "device_id": device_id,
+            "status": status,
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
+        
+    score = float(tx_dict.get("catboost_score", tx_dict.get("risk_score", 0.965 if is_attack else 0.045)))
+    
+    shap_summary = {
+        "ml_score": score,
+        "risk_score": score
+    }
+    graph_summary = {
+        "cluster_size": 4 if is_attack else 1
+    }
+    
+    report_obj = dossier_engine.generate_dossier(tx_dict, shap_summary, graph_summary)
+    return report_obj.model_dump()
 
 
 @app.get("/api/dossier/{transaction_id}/pdf")

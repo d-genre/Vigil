@@ -1,7 +1,7 @@
 """
 FRAUD-RING RADAR Graph Module (backend/graph/)
 Provides NetworkX heterogeneous fraud graph construction, serialization,
-analytics, and graph primitives/query functions.
+analytics, ego network visualization, and temporal IP map tracking.
 """
 
 from .build_graph import (
@@ -24,6 +24,12 @@ from .graph_queries import (
 from .graph_analytics import (
     calculate_graph_statistics
 )
+from .ego_network import (
+    generate_ego_network
+)
+from .temporal_map import (
+    generate_temporal_map
+)
 
 __all__ = [
     'build_fraud_graph',
@@ -39,5 +45,7 @@ __all__ = [
     'get_money_flow_path',
     'get_accounts_sharing_device',
     'get_accounts_sharing_ip',
-    'calculate_graph_statistics'
+    'calculate_graph_statistics',
+    'generate_ego_network',
+    'generate_temporal_map'
 ]
