@@ -266,7 +266,7 @@ This document specifies the REST API endpoints and WebSocket channels for the Vi
 
 ## 7. WebSockets
 
-### `ws://localhost:8000/ws/live`
+### `wss://vigil-cmpd.onrender.com/ws/live`
 * **Purpose**: Real-time push feed for live transaction streaming, immediate high-risk alerts, and investigation state updates.
 * **Event Types**:
   - `TRANSACTION_SCREENED`: Sent for every processed transaction.

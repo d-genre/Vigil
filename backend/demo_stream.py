@@ -3,8 +3,8 @@ import httpx
 import uuid
 from datetime import datetime, timezone
 
-# URL of the local Vigil FastAPI server
-API_URL = "http://localhost:8000/transactions"
+# URL of the Vigil FastAPI server
+API_URL = "https://vigil-cmpd.onrender.com/transactions"
 
 def generate_tx(amount: float, desc: str) -> dict:
     return {

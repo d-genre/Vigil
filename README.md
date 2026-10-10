@@ -1,45 +1,167 @@
-# Vigil — Autonomous Fraud Investigation Agent
+# VIGIL — Autonomous AI Fraud Governance & Judicial Command Center
 
-**One-Line Pitch:** Vigil streams live transactions, screens them using CatBoost and TreeSHAP, reconstructs dynamic fraud graphs and geo-travel maps, synthesizes judicial prosecution vs. defense evidence, and generates audit-grade PDF dossiers for human-in-the-loop decisions.
-
----
-
-## 🚀 Overview
-
-**Vigil** is an AI-powered autonomous fraud investigation and triage platform designed for modern financial compliance.
-
-Unlike traditional static fraud classifiers that merely output opaque binary flags, Vigil operates as an end-to-end autonomous investigation cockpit:
-
-1. **Continuous Ingestion & Ticking Stream:** Ingests live transactional data via an automated 15-second simulation loop backed by an in-memory ring buffer.
-2. **Behavioral Screening & TreeSHAP Drivers:** Evaluates 30+ features using CatBoost and extracts exact feature-level TreeSHAP contributions to quantify risk drivers without black-box ambiguity.
-3. **Behavioral Pattern Recognition:** Analyzes 7 specialized fraud signatures (Impossible Travel, Velocity Burst, Smurfing, ATO, Device Syndicates, Card Testing, and Rapid Drain).
-4. **Dynamic Network & Geo Forensics:** Reconstructs fraudster ego networks (degrees of separation across merchants, IPs, and devices) and tracks global IP hops with impossible travel velocity calculations.
-5. **Judicial Evidence Synthesis:** Functions as a digital fraud prosecutor, balancing incriminating **Prosecution Evidence** against mitigating **Defense Counter-Evidence** ("Why NOT to block").
-6. **Live Pitch Attack Injection:** Features an unlabelled, single-click attack trigger to inject anomalies directly into the stream for live validation.
-7. **On-Demand PDF Dossier Exporter:** Generates full, multi-section binary PDF investigation case files for human analysts, compliance officers, and legal auditors.
+> **One-Line Pitch**: Vigil replaces opaque binary fraud scoring with an **Autonomous Judicial Investigation Engine** — screening live transactions using CatBoost and TreeSHAP, detecting complex behavioral patterns, mapping dynamic fraud ring graph topologies, and synthesizing auditable **Prosecution vs. Defense Evidence** into downloadable Judicial Dossiers.
 
 ---
 
-## ✨ Key Features
+## 📸 System Architecture & End-to-End Pipeline
 
-* ⚡ **15-Second Automated Stream Engine:** In-memory `deque` buffer running an autonomous background heartbeat, continuously scoring benign transactions alongside anomalous edge cases.
-* 🎯 **Single-Click Live Attack Trigger:** On-demand injection endpoint (`/api/transactions/simulate-attack`) that routes an untagged synthetic attack into the live screening pipeline without exposing pre-selected fraud labels.
-* 🌲 **TreeSHAP Explainability Layer:** Direct mathematical attribution of risk factors (e.g., `geo_velocity: +0.412`, `device_trust_score: -0.310`) to justify flags transparently.
-* 🔍 **7 Behavioral Anomaly Detectors:** Dedicated heuristic modules targeting Impossible Travel (>800 km/h), Velocity Bursts, Mule Chains, Account Takeover (ATO), Device Syndicates, Card Testing, and Rapid Balance Drain.
-* 🕸️ **Dynamic Fraudster Ego Network:** Topology graph derived dynamically per transaction, visually mapping hops across accounts, compromised devices, Tor exit IPs, and mule endpoints with narrative analysis.
-* 🌍 **Temporal Geo-Velocity Map:** Global interactive IP hop tracker calculating geographical transit speed ($\Delta t$ vs distance) to pinpoint physical impossibility violations.
-* ⚖️ **Judicial Dossier Engine:** Balanced investigative evaluation contrasting positive risk flags with mitigating factors (3DS verification, habitual merchant match, trusted billing zip).
-* 📑 **Audit-Ready PDF Dossier Exporter:** High-resolution PDF generation endpoint (`/api/dossier/{id}/pdf`) compiling the case summary, quantitative feature tables, dual-column evidence files, and recommended remediation protocols.
-* 👤 **Human-in-the-Loop Governance:** Defensible verdict recommendations (`APPROVE`, `STEP_UP_VERIFICATION`, `DECLINE_AND_FREEZE`) preserving final decision authority for fraud analysts.
+```
+                     +---------------------------------------+
+                     |         Live Transaction Stream       |
+                     | (StreamManager / DB / Ingestion API)  |
+                     +-------------------+-------------------+
+                                         |
+                                         v
+                     +-------------------+-------------------+
+                     |      ML Screening Service (CatBoost)   |
+                     |   Calculates Risk Score & SHAP Values |
+                     +-------------------+-------------------+
+                                         |
+                                         v
+       +---------------------------------+---------------------------------+
+       |                                                                   |
+       v                                                                   v
++------+-----------------------------+             +-----------------------+------+
+|     7 Fraud Pattern Detectors      |             |     NetworkX Graph Engine       |
+| - Impossible Travel  - Mule Chain  |             | - Fraud Ring Discovery        |
+| - Velocity Burst     - ATO         |             | - Suspicious Subgraph Trace   |
+| - Device Syndicate   - Card Test   |             | - Topology Stats (Density)    |
+| - Rapid Drain                      |             +-----------------------+------+
+|                                    |                                     |
++------+-----------------------------+                                     |
+       |                                                                   |
+       +---------------------------------+---------------------------------+
+                                         |
+                                         v
+                     +-------------------+-------------------+
+                     |     Vigil Judicial Dossier Engine     |
+                     |                                       |
+                     |  - Prosecution Evidence (Incriminating)|
+                     |  - Defense Evidence (Mitigating)     |
+                     |  - TreeSHAP Risk Drivers             |
+                     |  - Network Topology Summary           |
+                     |  - Final Verdict & Action             |
+                     +-------------------+-------------------+
+                                         |
+                                         v
+                     +-------------------+-------------------+
+                     |    FastAPI Event-Driven Command Center|
+                     |                                       |
+                     |  - /api/transactions/stream           |
+                     |  - /api/transactions/simulate-attack  |
+                     |  - /api/graph/{id}                    |
+                     |  - /api/dossier/{id}                  |
+                     |  - /api/dossier/{id}/pdf              |
+                     +---------------------------------------+
+```
+
+---
+
+## 🧠 How Vigil Works: The 5 Core Pillars
+
+### Pillar 1: High-Throughput ML Screening & TreeSHAP Explainability (`ml/`)
+- Powered by a **CatBoost classifier** trained on 30+ dynamic behavioral features (velocity windows, haversine location distance, device reuse ratios, historical baseline deviations).
+- Generates feature-level **TreeSHAP explainability drivers** (`ip_risk_score: +0.412`, `device_trust_score: -0.310`) to quantify exact risk contributors without black-box ambiguity.
+
+### Pillar 2: 7 Specialized Behavioral Pattern Detectors (`fraud/`)
+1. **Impossible Travel**: Flags transactions occurring at physical distances requiring impossible speeds (> 900 km/h).
+2. **Velocity Burst**: Detects sudden spikes in transaction volume within short windows (< 60s).
+3. **Mule Chain / Smurfing**: Identifies multi-hop money laundering fan-outs where funds are split across newly created accounts.
+4. **Account Takeover (ATO)**: Detects credential stuffing followed by immediate high-value password/MFA resets and money transfers.
+5. **Device Syndicate**: Flags hardware fingerprint GUIDs shared across multiple unrelated bank accounts.
+6. **Card Testing**: Spots automated micro-purchases ($0.50, $1.00) used by fraudsters to test stolen credit card validity.
+7. **Rapid Drain**: Flags accounts emptying > 90% of their total balance within minutes of receiving a transfer.
+
+### Pillar 3: Heterogeneous Network Topology Engine (`graph/`)
+- Constructs a heterogeneous **NetworkX graph** mapping entity nodes (`TRANSACTION`, `USER_ACCOUNT`, `IP_ADDRESS`, `DEVICE`, `MULE_ACCOUNT`, `MERCHANT`) and relationship edges (`INITIATED`, `ORIGINATED_FROM`, `USED_DEVICE`, `SPLIT_TRANSFER`).
+- Detects multi-account smurfing rings, calculates subgraph density, and flags shared suspicious infrastructure (Tor exit nodes, banned GUIDs).
+
+### Pillar 4: Judicial Dossier Engine (`backend/dossier_service.py`)
+- Functions like a digital fraud prosecutor:
+  - **Prosecution Evidence**: Compiles incriminating signals with positive impact scores.
+  - **Defense Counter-Evidence**: Evaluates mitigating factors (e.g., 2FA step-up passed, 120+ clean historic sessions, habitual merchant affinity) to prevent false positives and protect legitimate customers.
+  - **Final Verdict**: Issues auditable judgments (`APPROVE`, `REVIEW`, `REJECT_AND_FREEZE`).
+
+### Pillar 5: On-Demand PDF Report Exporter (`backend/pdf_exporter.py`)
+- Dynamically compiles Judicial Dossiers into downloadable, legal-grade PDF binary buffers (`/api/dossier/{id}/pdf`) using `fpdf2` with automated unicode sanitization.
+
+---
+
+## ⚡ Command Center API Endpoints
+
+| Method | Route | Description |
+|---|---|---|
+| `GET` | `/` | API Welcome & Endpoint Index |
+| `GET` | `/health` | System health check (ML, DB, Stream status) |
+| `GET` | `/api/transactions/stream` | Live transaction stream buffer (Supports `?tick=true`) |
+| `POST` | `/api/transactions/simulate-attack` | Injects high-risk attack transaction (`TX_FLAGGED_...`) for pitch demos |
+| `GET` | `/api/graph/{transaction_id}` | NetworkX graph nodes, edges, density, and fraud ring pattern |
+| `GET` | `/api/dossier/{transaction_id}` | Full JSON Judicial Dossier (Prosecution vs. Defense) |
+| `GET` | `/api/dossier/{transaction_id}/pdf` | Downloadable binary PDF Dossier Report stream |
+| `WS` | `/ws/live` | WebSocket connection for real-time dashboard UI updates |
 
 ---
 
 ## 🛠️ Technology Stack
 
 | Domain | Technologies |
-| --- | --- |
-| **Core & Backend** | Python 3.10+, FastAPI, Uvicorn, Pydantic v2, `asyncio` |
-| **ML & Explainability** | CatBoost Classifier, TreeSHAP, NumPy, Pandas |
-| **Graph & Spatial Analysis** | NetworkX, GeoPy, Plotly Geo / Mapbox |
-| **Dossier & Document Export** | ReportLab / fpdf2, in-memory `io.BytesIO` Streaming |
-| **Frontend UI** | React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons |
+|---|---|
+| **Core & Backend** | Python 3.10+, FastAPI, Uvicorn, Pydantic v2, SQLite |
+| **ML & Analytics** | CatBoost, TreeSHAP, Pandas, NumPy, Scikit-learn |
+| **Fraud & Graph** | NetworkX, Custom Behavioral Pattern Detectors |
+| **PDF Generation** | FPDF2 |
+| **Frontend Stack** | React 18, Vite, TypeScript, Tailwind CSS, Cytoscape.js |
+
+---
+
+## 👥 Team & Ownership Boundaries
+
+| Role | Team Member | Owned Directories | Responsibilities |
+|---|---|---|---|
+| **ML Engineer** | Member 1 | `ml/` | Dataset preparation, feature engineering, CatBoost classifier, model evaluation, prediction interface. |
+| **Fraud & Graph** | Member 2 | `fraud/`, `graph/` | 7 pattern detectors, NetworkX graph construction, suspicious path detection, fraud ring analysis. |
+| **Frontend** | Member 3 | `frontend/` | React UI, Live Feed, Risk Queue, Cytoscape visualizer, Dossier view. |
+| **Backend & Integration** | Member 4 | `backend/` | FastAPI routes, Dossier Engine, Stream Manager, PDF exporter, SQLite integration. |
+| **Shared** | All | `schemas/`, `docs/` | Shared Pydantic data models & API contracts. |
+
+---
+
+## 💻 Quick Start & Execution
+
+### 1. Prerequisites
+- Python 3.10+
+- Node.js 18+ (for frontend)
+
+### 2. Environment Setup
+```bash
+python -m venv .venv
+# On Windows:
+.\.venv\Scripts\Activate.ps1
+# On Linux/macOS:
+source .venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+### 3. Launch Backend API Server
+```bash
+python -m uvicorn backend.main:app --reload --port 8000
+```
+
+### 4. Interactive API Documentation
+Open your browser and navigate to:  
+👉 `https://vigil-cmpd.onrender.com/docs`
+
+### 5. Run Verification Audit Suite
+```bash
+python scratch/verify_all_6_layers.py
+```
+
+---
+
+## 📄 Core Documentation Links
+
+- [`AGENTS.md`](file:///c:/Divya/College/hackathons/agnitia/AGENTS.md): AI Agent Governance & Team Rules
+- [`PROJECT_WALKTHROUGH.md`](file:///c:/Divya/College/hackathons/agnitia/docs/PROJECT_WALKTHROUGH.md): Detailed Codebase & Architectural Walkthrough
+- [`FRONTEND_INTEGRATION_GUIDE.md`](file:///c:/Divya/College/hackathons/agnitia/docs/FRONTEND_INTEGRATION_GUIDE.md): React UI Component & API Integration Guide

@@ -138,3 +138,40 @@ export interface DossierResponse {
   defense_evidence: EvidenceImpact[]
   explainability_drivers: ExplainabilityDriver[]
 }
+
+export interface LatencyBreakdown {
+  ml_inference_ms: number
+  graph_traversal_ms: number
+  rule_engine_ms: number
+  dossier_generation_ms: number
+}
+
+export interface ConfusionMatrix {
+  true_positives: number
+  false_positives: number
+  true_negatives: number
+  false_negatives: number
+}
+
+export interface FraudTypeMetric {
+  category: string
+  precision: number
+  recall: number
+  f1: number
+  cases: number
+}
+
+export interface EvaluationResponse {
+  total_screened: number
+  flagged_cases: number
+  precision: number
+  recall: number
+  f1_score: number
+  avg_investigation_time_ms: number
+  roc_auc?: number
+  pr_auc?: number
+  false_positive_rate?: number
+  latency_breakdown?: LatencyBreakdown
+  confusion_matrix?: ConfusionMatrix
+  fraud_type_breakdown?: FraudTypeMetric[]
+}
