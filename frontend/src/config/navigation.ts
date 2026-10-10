@@ -7,7 +7,6 @@ export const NAV_GROUPS: NavGroup[] = [
       { id: 'overview', label: 'Overview', iconName: 'overview' },
       { id: 'investigations', label: 'Investigations', iconName: 'investigations' },
       { id: 'graph-explorer', label: 'Graph Explorer', iconName: 'graph' },
-      { id: 'case-review', label: 'Case Review', iconName: 'case-review' },
     ],
   },
   {
