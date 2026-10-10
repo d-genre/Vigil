@@ -8,7 +8,6 @@ import { apiService } from './services/api'
 import { OverviewView } from './views/OverviewView'
 import { InvestigationsView } from './views/InvestigationsView'
 import { GraphExplorerView } from './views/GraphExplorerView'
-import { CaseReviewView } from './views/CaseReviewView'
 import { EvidenceView } from './views/EvidenceView'
 import { AttackLabView } from './views/AttackLabView'
 import { EvaluationView } from './views/EvaluationView'
@@ -62,8 +61,6 @@ function App() {
         return 'Investigations'
       case 'graph-explorer':
         return 'Graph Explorer'
-      case 'case-review':
-        return 'Case Review'
       case 'evidence':
         return 'Evidence'
       case 'attack-lab':
@@ -96,8 +93,6 @@ function App() {
         )
       case 'graph-explorer':
         return <GraphExplorerView initialTransactionId={selectedTxForGraph} />
-      case 'case-review':
-        return <CaseReviewView />
       case 'evidence':
         return <EvidenceView initialTransactionId={selectedTxForDossier} />
       case 'attack-lab':

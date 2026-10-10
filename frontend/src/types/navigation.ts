@@ -2,7 +2,6 @@ export type NavItemId =
   | 'overview'
   | 'investigations'
   | 'graph-explorer'
-  | 'case-review'
   | 'evidence'
   | 'attack-lab'
   | 'evaluation'
